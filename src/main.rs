@@ -6,6 +6,8 @@ use axum::{
 mod handlers;
 mod state;
 mod models;
+mod services;
+mod errors;
 
 use handlers::auth_handler::{health};
 
