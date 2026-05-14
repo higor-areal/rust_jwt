@@ -1,4 +1,4 @@
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use std::env;
 
 #[derive(Clone)]
@@ -9,10 +9,13 @@ pub struct Config{
 
 impl Config {
     pub fn from_env() -> Self{
-        dotenv.ok();
+        dotenv().ok();
 
-        Self{
-            jwt_secret: env::var()
+        Self {
+            jwt_secret: env::var("JWT_SECRET")
+                .expect("JWT_SECRET não definido"),
+            database_url: env::var("DATABASE_URL")
+                .expect("DATABASE_URL não definido"),
         }
     }
 }
