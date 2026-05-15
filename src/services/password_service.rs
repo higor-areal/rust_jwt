@@ -9,42 +9,55 @@ use argon2::{
     Argon2,
 };
 
+use crate::errors::password_error::PasswordError;
+use serde::{Deserialize, Serialize};
 
-pub struct Password{
-    password_hash: String
+#[derive(Deserialize, Serialize)]
+pub struct Password {
+    hash: String,
 }
 
-impl Password{
-    pub fn new(password: &str) -> Password{
-        //temos que chamar hash_password aqui
-        Password{password_hash: password}
-    }
 
-    pub fn verify_password(&self, password: String) -> bool{
-        //chamar is_password_valid
-        //temos que chamar hash_password aqui
 
-        true
+impl Password {
+    pub fn new(password: &str) -> Result<Password, PasswordError> {
+        if !Self::is_password_valid(password) {
+            return Err(PasswordError::InvalidPassword);
+        }
+
+        let hash = Self::hash_password(password)?;
+        Ok(Password { hash: hash })
     }
 
     pub fn is_password_valid(password: &str) -> bool {
-        let upper = password.chars().any(|c| c.is_uppercase());
-        let lower = password.chars().any(|c| c.is_lowercase());
-        let digit = password.chars().any(|c| c.is_numeric());
-        let special = password.chars().any(|c| !c.is_alphanumeric());
-        let len = password.len() >= 8;
-
-        len && upper && lower && digit && special
+        // essa função serve pra criar criterios pra senha, mas como é teste, resolvi deixar tudo true
+        password.len() >=8
     }
 
-    pub fn hash_password(password: &str) -> Result<String, Box<dyn std::error::Error>>{
-        let salt = SaltString::generate_token(&mut OsRng);
+    pub fn verify_password(
+        &self,
+        password: &str,
+    ) -> Result<bool, PasswordError> {
+        
+        match PasswordHash::new(&self.hash) {
+            Ok(hash) => {
+                let result = Argon2::default()
+                .verify_password(password.as_bytes(), &hash).is_ok();
+                Ok(result)
+            }
+            Err(_) => Err(PasswordError::HashError)
+        }
+    }
+
+    pub fn hash_password(password: &str) -> Result<String, PasswordError> {
+        let salt = SaltString::generate(&mut OsRng);
 
         let argon2 = Argon2::default();
 
-        let password_hash = argon2.hash_password(password.as_bytes(), &salt)?;
-
-        Ok(password_hash.to_string())
-
+        match argon2.hash_password(password.as_bytes(), &salt) {
+            Ok(hash) => Ok(hash.to_string()),
+            Err(_) => Err(PasswordError::HashError)
+        }
+        //tive ajuda do chat pra tratar esse erro, como ainda é meio complexo resolvi criar um meio termo, um enum pra propagar erro
     }
 }
