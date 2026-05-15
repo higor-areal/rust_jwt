@@ -1,12 +1,34 @@
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 
-#[derive(Deserialize)]
+use axum::Json;
+
+#[derive(Serialize)]
 pub struct ErrorResponse {
-    status_code: u16,
-    message: String
+    pub status_code: u16,
+    pub message: String
+}
+
+#[derive(Serialize)]
+pub struct SucessResponse {
+    pub status_code: u16,
+    pub message: String
 }
 
 #[derive(Serialize)]
 pub struct LoginResponse{
-    token: String
+    pub token: String
+}
+
+pub fn bad_request(msg: &str) -> Json<ErrorResponse> {
+    Json(ErrorResponse {
+        status_code: 400,
+        message: msg.to_string(),
+    })
+}
+
+pub fn success_request(msg: &str) -> Json<SucessResponse> {
+    Json(SucessResponse {
+        status_code: 201,
+        message: msg.to_string(),
+    })
 }
