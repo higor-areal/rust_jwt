@@ -10,11 +10,10 @@ use jsonwebtoken::{
 };
 use chrono::{Utc, Duration};
 
-use crate::models::user;
 
 #[derive(Deserialize, Serialize)]
 pub struct Claims{
-    sub: String,
+    pub sub: String,
     exp: usize
 }
 
@@ -36,6 +35,8 @@ pub fn generate_token(user_name: String, secret: &str) -> String{
         .unwrap()
 
 }
+
+#[allow(dead_code)]
 
 pub fn decode_token(token: &str, secret: &str) -> Claims{
     let token_data = decode::<Claims>(   token, 

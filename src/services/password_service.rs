@@ -12,7 +12,7 @@ use argon2::{
 use crate::errors::password_error::PasswordError;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize,Clone)]
 pub struct Password {
     hash: String,
 }
