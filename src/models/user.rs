@@ -23,7 +23,7 @@ impl UserRequest {
 }
 
 
-
+#[derive(Clone)]
 pub struct User{
     pub user_name: String,
     password_hash: Password
