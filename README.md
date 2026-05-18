@@ -1,4 +1,13 @@
-﻿## 📝 Notas importantes
+## Testando com Postman
+
+Para facilitar os testes da API, foi criada uma collection/workspace no Postman contendo as rotas já configuradas.
+
+Acesse:
+https://www.postman.com/blue-comet-585779/workspace/jwt/request/38782075-1270ef21-6598-4e93-994d-cc6894ef9619?action=share&creator=38782075&active-environment=38782075-bafc7a86-f5d4-4cad-923d-9a9042710c19
+
+--- 
+ 
+ ## 📝 Notas importantes
 
 Durante este projeto aprendi bastante sobre **JWT**.
 
