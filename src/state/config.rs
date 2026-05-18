@@ -4,7 +4,7 @@ use std::env;
 #[derive(Clone)]
 pub struct Config{
     pub jwt_secret: String,
-    pub database_url: String,
+    pub _database_url: String,
 }
 
 impl Config {
@@ -14,7 +14,7 @@ impl Config {
         Self {
             jwt_secret: env::var("JWT_SECRET")
                 .expect("JWT_SECRET não definido"),
-            database_url: env::var("DATABASE_URL")
+            _database_url: env::var("DATABASE_URL")
                 .expect("DATABASE_URL não definido"),
         }
     }
