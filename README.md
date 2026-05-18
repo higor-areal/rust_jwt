@@ -66,3 +66,295 @@ Esse foi um dos bugs mais educativos até agora, porque me forçou a entender me
 - diferenças entre std e Tokio
 
 ---
+
+---
+
+## 🌐 Rotas da API
+
+Esta API implementa um fluxo simples de autenticação usando JWT.
+
+Os usuários são armazenados em memória através de:
+
+```rust
+HashMap<String, User>
+```
+
+A chave é o username.
+
+---
+
+### GET /
+
+Health check da aplicação.
+
+Usado para verificar se servidor está online.
+
+Resposta:
+
+```json
+{
+  "message": "API rodando"
+}
+```
+
+---
+
+### POST /register
+
+Cria um novo usuário.
+
+Body:
+
+```json
+{
+  "username": "usuario123",
+  "password": "senha123"
+}
+```
+
+Validações:
+
+- username mínimo de 8 caracteres
+- username não vazio
+- senha validada por regras do `Password`
+
+Fluxo interno:
+
+```txt
+request
+→ valida dados
+→ gera hash com Argon2
+→ cria User
+→ salva em HashMap
+```
+
+Resposta:
+
+```json
+{
+  "status_code": 201,
+  "message": "Usuário criado"
+}
+```
+
+Possíveis erros:
+
+```json
+{
+  "status_code": 400,
+  "message": "usuario e/ou senha invalidos"
+}
+```
+
+---
+
+### POST /login
+
+Autentica usuário e retorna JWT.
+
+Body:
+
+```json
+{
+  "username": "usuario123",
+  "password": "senha123"
+}
+```
+
+Fluxo:
+
+```txt
+request
+→ busca usuário
+→ verifica senha
+→ gera token JWT
+→ retorna token
+```
+
+Resposta:
+
+```json
+{
+  "token": "jwt_token_aqui"
+}
+```
+
+---
+
+### GET /profile
+
+Rota protegida.
+
+Necessário header:
+
+```txt
+Authorization: Bearer seu_token
+```
+
+Fluxo:
+
+```txt
+request
+→ auth middleware
+→ valida token
+→ handler profile
+→ decode token
+→ retorna username
+```
+
+Resposta:
+
+```json
+{
+  "user_name": "usuario123"
+}
+```
+
+---
+
+## 🔐 Middleware de autenticação
+
+O middleware intercepta requests antes dos handlers protegidos.
+
+Arquivo:
+
+```txt
+middleware/auth_middleware.rs
+```
+
+Fluxo:
+
+```txt
+request
+↓
+extrai Authorization
+↓
+remove Bearer
+↓
+verify_token()
+↓
+next.run(request)
+```
+
+Se token inválido:
+
+```json
+Unauthorized
+```
+
+Status:
+
+```txt
+401 Unauthorized
+```
+
+Trecho central:
+
+```rust
+if verify_token(&token, &data.jwt_secret) {
+    next.run(request).await
+} else {
+    unauthorized
+}
+```
+
+---
+
+## 🧠 Estrutura dos dados
+
+### UserRequest
+
+Representa entrada do usuário.
+
+```rust
+pub struct UserRequest {
+    pub username: String,
+    pub password: String
+}
+```
+
+Usado em:
+
+- register
+- login
+
+---
+
+### User
+
+Representa usuário persistido em memória.
+
+```rust
+pub struct User {
+    pub user_name: String,
+    password_hash: Password
+}
+```
+
+A senha nunca é armazenada em texto puro.
+
+---
+
+### AppState
+
+Estado compartilhado da aplicação.
+
+```rust
+pub struct AppState {
+    pub users: Arc<Mutex<HashMap<String, User>>>,
+    pub config: Config
+}
+```
+
+Contém:
+
+- usuários
+- configuração JWT
+
+---
+
+## 🔄 Fluxo completo
+
+```txt
+register
+↓
+validação
+↓
+hash senha
+↓
+salva usuário
+↓
+login
+↓
+verifica senha
+↓
+gera token
+↓
+profile
+↓
+middleware valida token
+↓
+retorna usuário
+```
+
+---
+
+## ⚠️ Observações técnicas
+
+Este projeto usa:
+
+```rust
+tokio::sync::Mutex
+```
+
+e não:
+
+```rust
+std::sync::Mutex
+```
+
+porque a aplicação trabalha com async/await.
+
+O mutex do Tokio evita bloquear a thread inteira durante espera por lock.
+
+---
