@@ -19,6 +19,11 @@ pub struct LoginResponse{
     pub token: String
 }
 
+#[derive(Serialize)]
+pub struct ProfileResponse{
+    pub user_name: String
+}
+
 pub fn bad_request(msg: &str) -> Json<ErrorResponse> {
     Json(ErrorResponse {
         status_code: 400,
