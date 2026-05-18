@@ -67,8 +67,6 @@ Esse foi um dos bugs mais educativos até agora, porque me forçou a entender me
 
 ---
 
----
-
 ## 🌐 Rotas da API
 
 Esta API implementa um fluxo simples de autenticação usando JWT.
